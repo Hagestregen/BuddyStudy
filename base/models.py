@@ -18,6 +18,9 @@ class Room(models.Model):
     updated = models.DateTimeField(auto_now=True) #Saves the timestamp when data is saved
     created = models.DateTimeField(auto_now_add=True) #Only take a timestamp when the data is created
 
+    #Order the content to display the newest data first
+    class Meta:
+        ordering = ['-updated', '-created']
     def __str__(self):
         return self.name
 
