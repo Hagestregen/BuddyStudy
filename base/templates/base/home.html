@@ -5,8 +5,11 @@
 
 <div>
     <a href="{% url 'create-room' %}">Create Room</a>
+    <hr>
     <div>
         {% for room in rooms %}
+        <a href="{% url 'update-room' room.id%}">Update</a>
+        <a href="{% url 'delete-room' room.id%}">Delete</a>
         <div>
             <span>@{{room.host.username}}</span>
             <!-- the url room makes sure the href looks at the url name in urls -->
