@@ -14,7 +14,7 @@ class Room(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null=True) #If a topic is deleted 
     name = models.CharField(max_length=200)
     description = models.TextField(null=True, blank=True) #Allows for data to be blank when creating new data
-    # participants =
+    participants = models.ManyToManyField(User, related_name='participants', blank=True)
     updated = models.DateTimeField(auto_now=True) #Saves the timestamp when data is saved
     created = models.DateTimeField(auto_now_add=True) #Only take a timestamp when the data is created
 
