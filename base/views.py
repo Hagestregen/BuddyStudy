@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from .models import Room
+from .models import Room, Topic
+from django.db.models import Q
 from .forms import RoomForm
 
 # Python key value pair
@@ -13,8 +14,17 @@ from .forms import RoomForm
 # Return the base/home.html with the values from rooms
 # The context var is passed to the home.html site and displayed on the page by using a for loop
 def home(request):
-    rooms = Room.objects.all() # gives us all the objects in the db
-    context = {'rooms': rooms}
+    q = request.GET.get('q') if request.GET.get('q') != None else '' #q is equal to whatever we pass into the url
+    
+    rooms = Room.objects.filter(  #Check if a object contain the value in q and set that to 'room', the Q allows us to check if q is in multiple fields
+        Q(topic__name__icontains=q) |
+        Q(name__icontains=q) |
+        Q(description__icontains=q)
+        )
+    
+    topics = Topic.objects.all()
+    room_count = rooms.count() #Gives us the number of rooms
+    context = {'rooms': rooms, 'topics': topics, 'room_count': room_count}
     return render(request, 'base/home.html', context)
 
 
@@ -23,6 +33,7 @@ def room(request, pk):
     context = {'room': room}
     return render(request, 'base/room.html', context)
 
+
 #Creates a new room and saves it if the input is valid
 def createRoom(request):
     form = RoomForm()
@@ -30,9 +41,10 @@ def createRoom(request):
         form = RoomForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('home')
+            return redirect('home')   
     context = {'form': form}
     return render(request, 'base/room_form.html', context)
+
 
 #Method for updating the content of a room
 #We enter the primary key to know which item we are updating
@@ -43,9 +55,10 @@ def updateRoom(request, pk):
         form = RoomForm(request.POST, instance=room) #Updates the values of the form under this id
         if form.is_valid():
             form.save() # Saves the values to the db under the id
-            return redirect('home') #Returns the user to the home page
+            return redirect('home') #Returns the user to the home page      
     context = {'form': form}
     return render(request, 'base/room_form.html', context) #Context is what is being sent to the html page
+
 
 def deleteRoom(request, pk):
     room = Room.objects.get(id=pk)
