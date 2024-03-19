@@ -106,14 +106,24 @@ def userProfile(request, pk):
 @login_required(login_url='login') #Requires user to be logged in to access this function, if not the user is redirected to the login page
 def createRoom(request):
     form = RoomForm()
+    topics = Topic.objects.all()
     if request.method == 'POST':
-        form = RoomForm(request.POST)
-        if form.is_valid():
-            room = form.save(commit=False)
-            room.host = request.user
-            room.save()
-            return redirect('home')   
-    context = {'form': form}
+        topic_name = request.POST.get('topic')
+        topic, created = Topic.objects.get_or_create(name=topic_name) #If it cant find the object in the db "created = True" it will create it "topic". 
+        Room.objects.create(
+            host=request.user,
+            topic=topic,
+            name=request.POST.get('name'),
+            description=request.POST.get('description'),
+        )
+        
+        # form = RoomForm(request.POST)
+        # if form.is_valid():
+        #     room = form.save(commit=False)
+        #     room.host = request.user
+        #     room.save()
+        #     return redirect('home')   
+    context = {'form': form, 'topics':topics}
     return render(request, 'base/room_form.html', context)
 
 
@@ -123,14 +133,21 @@ def createRoom(request):
 def updateRoom(request, pk):
     room = Room.objects.get(id=pk) #What is being updated
     form = RoomForm(instance=room) #Creates a RoomForm instance with the prefilled values from the db
+    topics = Topic.objects.all()
     if request.user != room.host: #Check if user is the creator of the room, if not the httpresponse will be triggered
         return HttpResponse('You are not allowed here')
     if request.method == 'POST':
+        topic_name = request.POST.get('topic')
+        topic, created = Topic.objects.get_or_create(name=topic_name)
         form = RoomForm(request.POST, instance=room) #Updates the values of the form under this id
-        if form.is_valid():
-            form.save() # Saves the values to the db under the id
-            return redirect('home') #Returns the user to the home page          
-    context = {'form': form}
+        # if form.is_valid():
+        #     form.save() # Saves the values to the db under the id
+        room.name = request.POST.get('name')
+        room.topic = topic
+        room.description = request.POST.get('description')
+        room.save()
+        return redirect('home') #Returns the user to the home page          
+    context = {'form': form, 'topics': topics, 'room':room}
     return render(request, 'base/room_form.html', context) #Context is what is being sent to the html page
 
 
