@@ -70,7 +70,9 @@ def home(request):
         )
     topics = Topic.objects.all()
     room_count = rooms.count() #Gives us the number of rooms
-    context = {'rooms': rooms, 'topics': topics, 'room_count': room_count}
+    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q)) #Only display the messages with context to room
+    context = {'rooms': rooms, 'topics': topics, 'room_count': room_count,
+                'room_messages': room_messages}
     return render(request, 'base/home.html', context)
 
 
@@ -78,6 +80,7 @@ def room(request, pk):
     room = Room.objects.get(id=pk) # gives us the object with id matching the pk
     room_messages = room.message_set.all().order_by('-created') #Gives us the info about the Message model as a child of Room model in a order of newest first
     participants = room.participants.all()
+    
 
     if request.method == 'POST':
         message = Message.objects.create(
@@ -89,6 +92,14 @@ def room(request, pk):
         return redirect('room', pk=room.id)
     context = {'room': room, 'room_messages':room_messages, 'participants': participants}
     return render(request, 'base/room.html', context)
+
+def userProfile(request, pk):
+    user = User.objects.get(id=pk)
+    rooms = user.room_set.all() #Gives us all the children of a object by giving the model name: 'room', and '_set'
+    room_messages = user.message_set.all()
+    topics = Topic.objects.all()
+    context = {'user':user, 'rooms': rooms, 'topics':topics, 'room_messages':room_messages}
+    return render(request, 'base/profile.html', context)
 
 
 #Creates a new room and saves it if the input is valid
