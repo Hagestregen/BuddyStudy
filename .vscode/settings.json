@@ -1,0 +1,8 @@
+{
+    "python.analysis.extraPaths": [
+        "./env/Lib/site-packages"
+    ],
+    "python.autoComplete.extraPaths": [
+        "./env/Lib/site-packages"
+    ]
+}
